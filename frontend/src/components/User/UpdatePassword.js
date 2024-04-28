@@ -1,119 +1,108 @@
-.updatePasswordContainer {
-  width: 100vw;
-  height: 100vh;
-  max-width: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background-color: white;
-  position: fixed;
-  top: 0%;
-  left: 0;
-}
+import React, { Fragment, useState, useEffect } from "react";
+import "./UpdatePassword.css";
+import { useDispatch, useSelector } from "react-redux";
+import { clearErrors, updatePassword } from "../../actions/userAction";
+import { useAlert } from "react-alert";
+import { useNavigate } from "react-router-dom";
+import Loader from "../layout/Loader/Loader";
+import { UPDATE_PASSWORD_RESET } from "../../constants/userConstant";
+import LockOpenIcon from "@material-ui/icons/LockOpen";
+import LockIcon from "@material-ui/icons/Lock";
+import VpnKeyIcon from "@material-ui/icons/VpnKey";
 
-.updatePasswordBox {
-  background: #bdc3c7;
-  width: 45vw;
-  height: 70vh;
-  box-sizing: border-box;
-  overflow: hidden;
-  border-radius: 2%;
-  box-shadow: 0 0 10px whitesmoke;
-}
+const UpdatePassword = () => {
+  const dispatch = useDispatch();
+  const alert = useAlert();
+  const navigate = useNavigate();
 
-.updatePasswordHeading {
-  text-align: center;
-  color: black;
-  font: 600 2.2vmax "Roboto";
-  padding: 1vmax;
-  border-bottom: 2px solid black;
-  width: 50%;
-  margin: auto;
-}
+  const { error, isUpdated, loading } = useSelector((state) => state.profile);
 
-.updatePasswordForm {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin: auto;
-  padding: 2vmax 4vmax;
-  justify-content: space-evenly;
-  height: 70%;
-  transition: all 0.5s;
-}
+  const [oldPassword, setOldPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
 
-.updatePasswordForm > div {
-  display: flex;
-  width: 100%;
-  align-items: center;
-}
+  const updatePasswordSubmit = (e) => {
+    e.preventDefault();
+    const myForm = new FormData();
+    myForm.set("oldPassword", oldPassword);
+    myForm.set("newPassword", newPassword);
+    myForm.set("confirmPassword", confirmPassword);
+    dispatch(updatePassword(myForm));
+  };
 
-.updatePasswordForm > div > input {
-  padding: 1vmax 1vmax 1vmax 5vmax;
-  width: 100%;
-  box-sizing: border-box;
-  border: 1px solid rgba(0, 0, 0, 0.267);
-  border-radius: 4px;
-  font: 300 1.7vmax "Roboto";
-  outline: none;
-}
+  useEffect(() => {
+    if (error) {
+      alert.error(error);
+      dispatch(clearErrors());
+    }
+    if (isUpdated) {
+      alert.success("Update Password Successfully");
+      navigate("/account");
+      dispatch({
+        type: UPDATE_PASSWORD_RESET,
+      });
+    }
+  }, [dispatch, error, alert, navigate, isUpdated]);
 
-.updatePasswordForm > div > svg {
-  position: absolute;
-  transform: translateX(1vmax);
-  font-size: 1.6vmax;
-  color: rgba(0, 0, 0, 0.623);
-}
+  return (
+    <Fragment>
+      {loading ? (
+        <Loader />
+      ) : (
+        <Fragment>
+          <div className="updatePasswordContainer">
+            <div className="updatePasswordBox">
+              <h2 className="updatePasswordHeading">Update Password</h2>
 
-.updatePasswordBtn {
-  border: none;
-  background: linear-gradient(to right, #ff9900, #f2c94c);
-  color: white;
-  font: 500 2vmax "Roboto";
-  width: 100%;
-  padding: 0.8vmax;
-  cursor: pointer;
-  transition: all 0.5s;
-  border-radius: 4px;
-  outline: none;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.219);
-}
+              <form
+                className="updatePasswordForm"
+                onSubmit={updatePasswordSubmit}
+              >
+                <div className="loginPassword">
+                  <VpnKeyIcon />
+                  <input
+                    type="password"
+                    placeholder="Old Password"
+                    required
+                    value={oldPassword}
+                    onChange={(e) => setOldPassword(e.target.value)}
+                  />
+                </div>
 
-.updatePasswordBtn:hover {
-  background-color: black;
-}
+                <div className="loginPassword">
+                  <LockOpenIcon />
+                  <input
+                    type="password"
+                    placeholder="New Password"
+                    required
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                  />
+                </div>
 
-@media screen and (max-width: 600px) {
-  .updatePasswordContainer {
-    background-color: white;
-    top: 30px;
-  }
-  .updatePasswordBox {
-    width: 95vw;
-    height: 75vh;
-    border-radius: 2%;
-  }
+                <div className="loginPassword">
+                  <LockIcon />
+                  <input
+                    type="password"
+                    placeholder="Confirm Password"
+                    required
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                  />
+                </div>
 
-  .updatePasswordHeading {
-    font: 600 2.5vmax "Roboto";
-    margin-top: 2vmax;
-  }
+                <input
+                  type="submit"
+                  value="Change"
+                  className="updatePasswordBtn"
+                />
+              </form>
+            </div>
+          </div>
+        </Fragment>
+      )}
+    </Fragment>
+  );
+};
 
-  .updatePasswordForm {
-    padding: 0vmax 5vmax;
-  }
-
-  .updatePasswordForm > div > input {
-    padding: 1.5vmax 1.5vmax 1.5vmax 5vmax;
-    font: 500 2.2vmax "Roboto";
-  }
-
-  .updatePasswordForm > div > svg {
-    font-size: 3.2vmax;
-  }
-
-  .updatePasswordBtn {
-    font: 500 2.5vmax "Roboto";
-    padding: 1.8vmax;
-  }
-}
+export default UpdatePassword;
